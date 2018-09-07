@@ -1,2 +1,2 @@
-# data_notes
+# Data Notes
 Study notes taken from datacamp &amp; other online sources
