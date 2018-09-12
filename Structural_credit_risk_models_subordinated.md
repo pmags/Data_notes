@@ -4,11 +4,8 @@ PageTitle: Structural Credit Risk Models with Subordinated Process
 output: pdfdocument
 ---
 # Structural Credit Risk Models with Subordinated Process
-> file: 
-> 
-> location:
-> 
-> url: 
+
+> url: http://downloads.hindawi.com/journals/jam/2013/138272.pdf
 
 ### Introduction
 The probability of default, as one of the key risk parameters in the IRB approach, has many methodologies for its estimation. In general, we can classify the existing methodologies into three groups: 
