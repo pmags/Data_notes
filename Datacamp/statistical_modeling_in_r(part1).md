@@ -9,7 +9,7 @@ output: pdfdocument
 ## Chapter 1 - Introduction
 
 Statistical modeling is used for:
-- Identifying patterns in data~
+- Identifying patterns in data
 - Classifying events
 - Untangling multiple influences
 - Assessing strength of evidence 

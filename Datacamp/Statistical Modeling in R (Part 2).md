@@ -79,13 +79,13 @@ The effect size quantifies the strength of a relationship between 2 variables.
 Input x = 7 <-> Model M <-> Response Y = 3.2
 Input x = 8 <-> Model M <-> Response Y = 3.5
 ```
-${(3.5+3.2)\over(8-7)} = 0,3$
+`(3.5+3.2)/(8-7) = 0,3`
 
 Being positive means that the response increases as the explanatory variable increases (it has a positive relation).
 
 The magnitude of this relation depends, a lot, on the units used. If we want to compare we will have to convert them into the same units. example:
 
-${-0.055\ dollars/ mile\ *\ 10000\ miles/year} = -550\ dollars/year$
+`-0.055 dollars / mile *  10000 miles / year = -550 dollars/year`
 
 When there are multiple inputs is easy to change them independently inside a model, nonetheless, in real life changing one variable often means changing other variables too because they are connected. 
 
@@ -101,6 +101,142 @@ Implication for model building:
 Note: this affects on the calculation of the formula for the function effect_size.
 
 ### R-squared
-
 Correlation: r ("little r")
-Coefficient of determination: R2
+Coefficient of determination: R2 -> It can only be used for models with a quantitative variables.
+
+R-squared gives the fraction of the variance in the response variable accounted for by the model. Bigger is not always better. R-squared is about prediction, but that's not always the goal
+
+The R-squared of a model evaluated on input data is the variance of the model output divided by the variance of the response variable in the input data. 
+
+In order to calculate the R-squared one can use the following code 
+
+```R
+output_1 <- evaluate_model(model_1, data = HDD_Minneapolis)
+with(output_1, var(model_output)/var(hdd))
+```
+
+`var()` computes the variance of a variable. Recall that R-squared is the variance in the model output divided by the variance in the actual response values. **It is almost always calculated on the training data**.
+
+R-squared can be difficult to use to compare different models. R-squared goes up as new explanatory variables are added, _even if those explanatory variables are meaningless_.
+
+As an alternative we can use `rsquared()` for calculations.
+
+### Degrees of freedom
+Analysis of variance (ANOVA)
+`anova(mod4)` between other information it gives us the p-values for each variables on our models. Small p-values means higher predictability for the variable.
+
+> **Notes from the example given:** The city variable has 33 degrees of freedom and with the inclusion of so many variables what the model actually does is diving into more subgroups our data. Given that the population of restaurants is small is no wonder that the R-squared goes up given that the variance for each group is small.
+
+**Rules for counting degrees of freedom**
+- A dataset with **n** cases has **n** degrees of freedom.
+- The explanatory side of a model formula has a number of degrees of freedom that depends on the terms in the formula. Start counting at 1; every model has at least 1 degree of freedom even if there are no explanatory variables.
+  - A single variable has 1 degree of freedom if it is quantitative. If it is categorical with k different levels, it has k−1 degrees of freedom.
+  -If variables are connected with +, add together their individual degrees of freedom.
+  -If variables are connected with *, add together their individual degrees of freedom and then add in the product of their individual degrees of freedom.
+  -There are special rules that apply in some special circumstances, but you don't need to worry about those here.
+- The difference between the degrees of freedom of the dataset and the degrees of freedom of the model formula is called the residual degrees of freedom. Models with zero residual degrees of freedom are not generally at all useful. Models with a handful of residual degrees of freedom have statistical properties that are not reliable.
+
+It often happens that you'll include extra degrees of freedom in a model by accident, so watch out. One way that this might occur is when a variable that's intended to be quantitative is instead treated as categorical (perhaps because there's a non-numeric entry for a categorical variable.)
+
+## Chapter 3 - Sampling variability and mathematical transforms
+### Precision in modeling
+Confidence intervals are a representation of precision.
+
+Calculate precision of effect size let us conclude if a given variable is playing a meaningful role on the model.
+
+**Bootstrapping:** Use a single random sample to simulate a situation where you have many random samples. Use **resampling** to create "new" random samples from our original sample.
+
+Code to create random samples:
+
+```R
+library(mosaic)
+sample(sample_of_statisticians, replace = TRUE)
+```
+
+The term replace = TRUE means that for ever given observation, after selection it remains available for selection again (it results in repeated values).
+
+The following code constructs a bootstrap trial by "hand":
+
+```R
+# Two starting elements
+model <- lm(wage ~ age + sector, data = CPS85)
+effect_size(model, ~ age)
+
+# For practice
+my_test_resample <- sample(1:10, replace = TRUE)
+my_test_resample
+
+# Construct a resampling of CPS85
+trial_1_indices <- sample(1:nrow(CPS85), replace = TRUE)
+trial_1_data <- CPS85[trial_1_indices, ]
+
+# Train the model to that resampling
+trial_1_model <- lm(wage ~age + sector, data = trial_1_data)
+
+# Calculate the quantity 
+effect_size(trial_1_model, ~ age)
+```
+
+For this case we generated a random index using the function `sample()`. Notice that we set the replace argument to TRUE, meaning that we will have repeated values chosen from the original data. To create a new sample with the same size as the original population we subset using the function `dataframe[index,]`.
+
+ You could use a loop to program the carrying out of repeated trials. However, the operation is so common that the `statisticalModeling` package provides a function to do this, called `ensemble()`. An ensemble is a collection of trials. Each of the trials contained in the output of `ensemble()` consists of a resampled data frame and a model trained on that data frame.
+
+```R
+ # Model and effect size from the "real" data
+model <- lm(wage ~ age + sector, data = CPS85)
+effect_size(model, ~ age)
+
+# Generate 10 resampling trials
+my_trials <- ensemble(model, nreps = 10)
+
+# Find the effect size for each trial
+effect_size(my_trials, ~ age)
+```
+
+By calculating the standard deviation `sd()` on the slope given by the function `effect_size()` we can have a good idea of the precision.
+
+### Scales and transformations
+Is the response variable money, or another variable where change is proportional to current size?
+  - Population growth
+  - Prices or other variables involving money
+
+The constant change of the logarithm represents a proportional change on the original variable. A logarithm change can be expressed as a proportion by just using exponentiation `exp(slope) - 1`
+
+The rank transform: replace the value with the position it would occupy if the variable were sorted from least to most. For this we can use the function `rank()`
+
+> **Quote from course:**You might be wondering why it helps to use the log(Coverage) term in the model rather than just plain Coverage. The reason is that there is an approximately linear relationship between Cost and Coverage (twice the coverage incurs about twice the cost). But because of the exponential relationship between Cost and Age, you used log(Cost) in the model. If using plain Coverage on the explanatory side, this would imply an exponential relationship between Cost and Coverage. Using log(Coverage) along with log(Cost) lets you approximate the linear relationship between Cost and Coverage.
+
+In the cases of _exponential growth_ a linear model can only catch this effect by log scaling the y variable.
+
+When you build a model with a logarithmically transformed response, the usual way of calculating prediction error will produce the error in the logarithm, not the error in the original value. [In order to compare we just need to exp() the model_output variable and use that result to calculate MSE]
+
+## Chapter 4 - Variables working together
+### Confidence & collinearity
+Covariate: explanatory variable that's not of direct interest but is important in the system under study.
+
+Collinear refers to two variables being in alignment. Example: education and poverty. May vary ate the individual level, but go hand in  hand at the population level.
+
+Variance Inflation factor (VIF) = 1/(1-R2)
+
+The collinearity() function (from the statisticalModeling package) calculates how much the effect size might (at a maximum) be influenced by collinearity with the other explanatory variables.
+
+```R
+# The following calculates interval of confidence of 95%
+with(effect_from_1, mean(slope) + c(-2, 2) * sd(slope))
+```
+
+```R
+collinearity(~ Age + Mileage, data = Used_Fords)
+```
+
+**Some important ideas**
+- prediction error
+- effect size
+- covariates
+- quantitative vs. categorical responses
+- bootstrapping and cross validation
+
+
+**" All models are wrong; some are useful."** - _George Box_
+
+**History does not repeat, but it rhymes.** - _Mark Twain_
