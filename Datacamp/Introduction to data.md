@@ -57,7 +57,7 @@ A common way of creating a new variable from an existing variable is discretizin
 Example of using the dplyr package to create a variable on a data frame conditional to a function:
 
 ```R
-# Creat a new variable: read_cat
+# Create a new variable: read_cat
 hsb2 <- hsb2 %>%
         mutate(read_cat = ifelse(read <avg_read,
             "below average","at or above average"))
