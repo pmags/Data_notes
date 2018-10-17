@@ -7,7 +7,7 @@ PageTitle: Multiple and Logistic regression
 - [Chapter 3 - Multiple Regression](#chapter-3---multiple-regression)
 - [Chapter 4 - Logistic Regression](#chapter-4---logistic-regression)
 - [Chapter 5 - Case Study: Italian restaurants in NYC](#chapter-5---case-study-italian-restaurants-in-nyc)
- - [Chapter 6 - Additional interpretation of logistic regression](#chapter-6---additional-interpretation-of-logistic-regression)
+- [Chapter 6 - Additional interpretation of logistic regression](#chapter-6---additional-interpretation-of-logistic-regression)
   
 ## Chapter 1 - Parallel Slopes
 We will learn how to expand linear model to include an arbitrary number of explanatory variables, which can be a mixture of numeric and categorical. We will talk about logistic regression which allows us to model a binary response variable.
