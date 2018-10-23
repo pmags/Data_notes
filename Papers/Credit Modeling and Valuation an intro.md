@@ -167,7 +167,13 @@ The equation $D(t) = Ke^{-k(T-t)}$ can be thought of as the face value of the de
 The first-passage approach assumes that bond investors immediately take over
 control of the firm when its value falls below a barrier whose value is often prescribed by a debt covenant. In practice, bankruptcy codes often grant firms an extended period of time to reorganize operations after a default. If the restructuring is successful, a firm emerges from bankruptcy and continues operating. If the outcome is negative, bond investors seize control and liquidate the remaining firm assets.
 
+ > Note: model to be reviewed latter. Not relevant for the time being 
 
+### Dependent Defaults
+Credit spreads of different issuers are correlated through time. Two patterns are found in time series of spreads. The first is that spreads vary smoothly with general macro-economic factors in a correlated fashion. This means that firms share a common dependence on the economic environment, which results in _cyclical correlation_ between defaults. A sudden large variation in the credit risk of one issuer, which causes a spread jump in the first place, can propagate to other issuers as well. The rationale is that economic distress is _contagious_ and propagate from firm to firm.
+
+## Reduced form credit models
+Here we assume that default occurs without warning at an exogenous default rate, or intensity. The dynamics of the intensity are specified under the pricing probability. Instead of asking why the firm defaults, the intensity model is calibrated from market prices.
 
 
 ---
