@@ -107,3 +107,110 @@ Nonethless, when ploted we can see that the 4 sets show a very different reality
 _Statisticians must always be skeptical of potentially spurious correlations. Human beings are very good at seeing patterns in data,sometimes when the patterns themselves are actually just random noise._
 
 ## Chapter 3: Simple linear regression
+In statistics we use the _least squares criteria_ to evaluate a fit of a line. 
+
+The method of least squares is a standard approach in regression analysis to approximate the solution of overdetermined systems, i.e., sets of equations in which there are more equations than unknowns. "Least squares" means that the overall solution minimizes the sum of the squares of the residuals made in the results of every single equation.
+
+The most important application is in data fitting. The best fit in the least-squares sense minimizes the sum of squared residuals (a residual being: the difference between an observed value, and the fitted value provided by a model). 
+
+The least squares criterion implies that the slope of the regression line is unique. We can add a line that best fits our model by adding argunents to `ggplot`
+
+```R
+ggplot(data = possum, ases(y = totalL, x = tailL))+ 
+  geom_point() + geom_smooth(method = "lm", se = FALSE)
+```
+$$response = f(explanatory)+ noise$$
+
+$$Y = \beta_{0} + \beta{1} \cdot X + \epsilon$$
+
+On a linear model we specify that the distribution of the noise is `normal` with `mean = 0` and a `fixed standard deviation`.
+
+**Fitting procedure:**
+- Given $n$ observations of pairs $(x_{i},y_{i})$...
+- Find $\hat{\beta_{0}},\hat{\beta_{1}}$ that minimize $\sum_{i=1}^n e_{i}^2$
+- $e = Y - \hat{Y}$ 
+- Y-hat is expected value given corresponding X
+- Beta - hats are estimates of true, unknown betas
+- Residuals (e's) are estimates of true, unknown epsilons
+  
+Two facts enable you to compute the slope b1 and intercept b0 of a simple linear regression model from some basic summary statistics.
+
+First, the slope can be defined as:
+
+$$\beta_{1}=r_{X,Y}\cdot\frac{S_{Y}}{S_{X}}$$
+
+where rX,Y represents the correlation (`cor()`) of X and Y and sX and sY represent the standard deviation (`sd()`) of X and Y, respectively.
+
+Second, the point ($\overline{x}$,$\overline{y}$) is always on the least squares regression line, where $\overline{x}$ and $\overline{y}$ denote the average of x and y, respectively.
+
+We are focusing on this course on simple linear regression models, but there are other models that can be used:
+- Least squares
+- Weighted
+- Generalized
+- Nonparametric
+- Ridge
+- Bayesian
+- ...
+
+## Chapter 4 - Interpreting regression models
+The units of the slope is the units of the explanatory variable by units of the response variable.
+
+While the geom_smooth(method = "lm") function is useful for drawing linear models on a scatterplot, it doesn't actually return the characteristics of the model. As suggested by that syntax, however, the function that creates linear models is lm(). This function generally takes two arguments:
+
+- A formula that specifies the model
+- A data argument for the data frame that contains the data you want to use to fit the model
+
+The lm() function return a model object having class "lm". This object contains lots of information about your regression model, including the data used to fit the model, the specification of the model, the fitted values and residuals, etc.
+
+The function `coef()` over a variable of class `"lm"` or any model, returns the fitted coeficients. The function `summary()` genarates a report with fitting statistics of the model.
+
+To access the fitted values we use the function `fitted.values()`. By definition this generates a vector as big as the one used to create the model. The `residuals()` function retrieves the noise or residuals of the difference between the real and fitted values.
+
+The least squares fitting procedure guarantees that the mean of the residuals is zero (n.b., numerical instability may result in the computed values not being exactly zero). At the same time, the mean of the fitted values must equal the mean of the response variable.
+
+The `predict(lm)` when applied to a model, returns the fitted values for existing data. If we had a `newdata` argument than we can predict the results for any new set of data `predict(lm,newdata)`.
+
+The following code allows to include real and predicted values on a plot:
+
+```R
+isrs <- broom::augment(mod, newdata=new_data)
+ggplot(data=textbooks, aes(x = amazNew, y = uclaNew))+
+  geom_point() + geom_smooth(method = "lm")+
+  geom_point(data = isrs, aes(y=.fitted),size = 3, color = "red")
+```
+## Chapter 5 - Model fit
+One way to assess strength of fit is to consider how far off the model is for a typical case. That is, for some observations, the fitted value will be very close to the actual value, while for others it will not. The magnitude of a typical residual can give us a sense of generally how close our estimates are.
+
+dure that the mean of the residuals is zero. Thus, it makes more sense to compute the square root of the mean squared residual, or root mean squared error $(RMSE)$. R calls this quantity the residual standard error.
+
+To make this estimate unbiased, you have to divide the sum of the squared residuals by the degrees of freedom in the model. Thus,
+
+$$RMSE = \sqrt{\frac{\sum_{i}e_{i}^2}{d.f.}} = \sqrt{\frac{SSE}{d.f.}} $$
+
+The `Null model` where $\hat{y} = \overline{y}$ is important to use as banchmark against a fitted model. The ratio of the SSE for our model and the SSE (or normaly called SST) for the Null model is a quantification of the variability explained by our model.
+
+$$R^2 = 1- \frac{SSE}{SST}= 1 - \frac{Var(e)}{Var(y)}$$
+
+**Leverage:**
+The leverage of an observation in a regression model is defined entirely in terms of the distance of that observation from the mean of the explanatory variable. That is, observations close to the mean of the explanatory variable have low leverage, while observations far from the mean of the explanatory variable have high leverage. Points of high leverage may or may not be influential.
+
+
+$$h_{i} = \frac{1}{n} + \frac{(x_{i}-\overline{x})^2}{\sum_{i=1}^n(x_{i}-\overline{x})^2}$$
+
+Points that are near to the center of the scatterplot have low leverage while points that far from teh center have high leverage. On the `augment()` fuction they show as `.hat`. Variables with high leverage can change the slope of a regression. This are called `influencers`.
+
+Cook's distance measures influence and can be found on `augment()` function as `.cooksd`.
+
+```R
+# Rank points of high leverage
+mod %>%
+  augment() %>%
+  arrange(desc(.hat)) %>%
+  head()
+```
+
+Observations of high leverage may or may not be influential. The influence of an observation depends not only on its leverage, but also on the magnitude of its residual. Recall that while leverage only takes into account the explanatory variable (x), the residual depends on the response variable (y) and the fitted value (y^).
+
+Influential points are likely to have high leverage and deviate from the general relationship between the two variables. We measure influence using Cook's distance, which incorporates both the leverage and residual of each observation.
+
+Observations can be outliers for a number of different reasons. Statisticians must always be careful—and more importantly, transparent—when dealing with outliers. Sometimes, a better model fit can be achieved by simply removing outliers and re-fitting the model. However, one must have strong justification for doing this. 
