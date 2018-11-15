@@ -75,7 +75,7 @@ The syntax to create a simple barchar in this case in very straight forward:
 ```R
 ggplot(comics, aes(x=id)) + geom_bar()
 ```
-Faceting brakes the data in subsets based on the levels of a categorical variable and constructs a plot for each. In ggplot we can easily do this by adding the argument `fact_wrap(~<condition by>)`
+Faceting brakes the data in subsets based on the levels of a categorical variable and constructs a plot for each. In ggplot we can easily do this by adding the argument `facet_wrap(~<condition by>)`
 
 Example:
 ```R
