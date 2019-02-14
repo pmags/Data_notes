@@ -63,3 +63,70 @@ model <- train(
 
 # Chapter 2: Classification models: fitting them and evaluating their performance
 
+Classification models differ from regression models in that you're trying to predict a categorical target.
+
+A useful tool for evaluating classification models is known as a confusion matrix. This is a matrix of the model's predicted classes versus the actual outcomes in reality.
+
+**The columns of the confusion matrix are the true classes while the rows are the predictions.**
+
+The main diagonal of the confusion matrix are the instances where the model is correct and the second diagonal when its wrong.
+
+To create a confusion matrix we start by fitting a model and predict on a test set. After, we cut the predicted probabilities with a treshold to get class assignments. A Logistic regression outputs a probability that an object is true, but we need this probabilities to make a binary decision. Then we do a 2-way frequency table using the `table()` function.
+
+```r
+table(p_class, test[["Class"]])
+```
+
+We can either use the `confusionMatrix()` function in caret do the calculations. confusionMatrix() in caret improves on table() from base R by adding lots of useful ancillary statistics in addition to the base rates in the table. You can calculate the confusion matrix (and the associated statistics) using the predicted outcomes as well as the actual outcomes.
+
+Example code:
+
+```r
+# If p exceeds threshold of 0.5, M else R: m_or_r
+m_or_r <- ifelse(p >0.5, "M", "R")
+
+# Convert to factor: p_class
+p_class <-factor(m_or_r, levels = levels(test[["Class"]]))
+
+# Create confusion matrix
+confusionMatrix(p_class, test[["Class"]])
+```
+
+In order to analyse different thresholds on a more sistematic way we can plot the tradeoff between true positives and false positives. This is cal the Receiver Operating Characteristic curve or `ROC curve`.
+
+Note: This course uses the `library(caTools)` to generate Roc curves.
+
+```r
+library(caTools)
+colAUC(p, test[["Class"]], plotROC = TRUE)
+```
+
+The x-axis is the false positive rate and the y axis is the true positive. Each point along the curve represents a different threshold. 
+
+`colAUC(predicted_probabilities, actual, plotROC = TRUE)`
+
+Just looking at a ROC curve starts to give us a good idea of how to evaluate whether or not our predictive model is any good. 
+
+Models with random predictions tend to produce curves that closely follow the diagonal line. On the other hand models that allow for a clear separation of classes produce a box with a single point at 1,0 to represent a model where is possible to achieve a 100% true positive rate and a 0% false positive rate.
+
+The area under the curve for a perfect model is exactly 1 and for a random model is 0.5.
+
+AUC ROC (Area under the ROC curve) is a single-number summary of the model's accuracy that does not require us to manually evaluate confusion matrices. This number summarizes the model's performance across all possible classification.
+
+You can use the trainControl() function in caret to use AUC (instead of acccuracy), to tune the parameters of your models. The twoClassSummary() convenience function allows you to do this easily.
+
+When using twoClassSummary(), be sure to always include the argument classProbs = TRUE or your model will throw an error! (You cannot calculate AUC with just class predictions. You need to have class probabilities as well.)
+
+Example code:
+
+```r
+myControl <- trainControl(
+  method = "cv",
+  number = 10,
+  summaryFunction = twoClassSummary,
+  classProbs = TRUE, # IMPORTANT!
+  verboseIter = TRUE
+)
+```
+# Chapter 3: Tuning model parameters to improve performance
+
