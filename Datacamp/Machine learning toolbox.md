@@ -130,3 +130,104 @@ myControl <- trainControl(
 ```
 # Chapter 3: Tuning model parameters to improve performance
 
+Random forests are a very popular type of machine learning model. They are quite robust against overfitting.
+
+The drawback to random forest is that, unlike linear models, they have hyperparameters to tune. They have to be manually specified by the data scientist as inputs to the predictive model.
+
+Random forest start with a simple decision tree model, which is fast but usually not very accurate. Random forest improves the accuray by fitting many trees which one to a bootstrap sample of the data. This is called _bootstrap aggregation or bagging._ Random forests take bagging one step further by randomly resampling the columns of the dataset at each split.
+
+```r
+model <- train(Class~., 
+                data= Sonar,
+                method = "ranger"
+)
+```
+
+Random forest models are much more flexible than linear models, and can model complicated nonlinear effects as well as automatically capture interactions between variables.
+
+Example of code for random forest and 5 folds control.
+
+```r
+ # Fit random forest: model
+model <- train(
+  quality ~.,
+  tuneLength = 1,
+  data = wine, method = "ranger",
+  trControl = trainControl(method = "cv", number = 5, verboseIter = TRUE)
+)
+
+# Print model to console
+model
+```
+
+Random forests have hyperparameters that control how the model is fit. The most important of these hyperparameters is `mtry` or number of randomly selected variables used at each split point in the individual decision trees that make up the random forest. Caret selects hyperparameters based on out-of-sample error. we can do this by increase the value of tunelenght (default = 3).  Suppose that a tree has a total of 10 splits and mtry = 2. This means that there are 10 samples of 2 predictors each time a split is evaluate
+
+We can pass our own, fully customized grids as data frames to the tuneGrid argument in train function. Random forests have a single tuning paramete, `mtry` so we make a data frame with a single column. We then pass this dataframe to tuneGrid parameter. You can provide any number of values for mtry, from 2 up to the number of columns in the dataset. In practice, there are diminishing returns for much larger values of mtry. 
+
+Example of code:
+
+```r
+# Define the tuning grid: tuneGrid
+tuneGrid <- data.frame(
+  .mtry = c(2,3,7),
+  .splitrule = "variance",
+  .min.node.size = 5
+)
+
+# Fit random forest: model
+model <- train(
+  quality~.,
+  tuneGrid = tuneGrid,
+  data = wine, 
+  method = "ranger",
+  trControl = trainControl(method = "cv", number = 5, verboseIter = TRUE)
+)
+
+# Print model to console
+model
+
+# Plot model
+plot(model)
+```
+
+`Glmnet` models are a an extension of generalized linear models, or the glm function in R. However, they have built-in variable selection that is useful on many real-world datasets. Thereare two different primary forms:
+
+  - **Lasso regression** which penalizes number of non-zero coefficients
+  - **Ridge regression** which penalizes absolute magnitude of coefficients
+
+`glmnet` models place constrains on your coefficients which helps prevent overfitting. **This is more commonly known as "penalized" regression modeling and is a very useful technique on datasets with many predictors and few values.**
+
+The glmnet models can fit a mix of lasso and ridge models. This gives lots of parameters to tune. An example is the `alpha` which varies between [0,1] where 0 is pure lasso and 1 is pure ridge. On the other hand `lambda` ranges from [0,Inf] and measures the size of the penalty.
+
+Classification problems are a little more complicated than regression problems because you have to provide a custom summaryFunction to the train() function to use the AUC metric to rank your models.
+
+For a single `alpha` gmlnet fits all values of `lambda` simultaneously. This is called the sub-model trick because we can fit a number of different models simultaneously and then explore the results of each sub-model after the fact. 
+
+```r
+# My favorite tuning grid for glmnet models is:
+
+expand.grid(alpha = 0:1,
+  lambda = seq(0.0001, 1, length = 100))
+```
+
+This grid explores a large number of lambda values (100, in fact), from a very small one to a very large one. If you want to explore fewer models, you can use a shorter lambda sequence. For example, `lambda = seq(0.0001, 1, length = 10)` would fit 10 models per value of alpha.
+
+Example:
+
+```r
+# Train glmnet with custom trainControl and tuning: model
+model <- train(
+  y~., overfit,
+  tuneGrid = expand.grid(alpha = 0:1,lambda = seq(0.0001,1, length = 20)),
+  method = "glmnet",
+  trControl = myControl
+)
+
+# Print model to console
+model
+
+# Print maximum ROC statistic
+max(model[["results"]][["ROC"]])
+```
+
+# Chapter 4: Preprocessing your data
