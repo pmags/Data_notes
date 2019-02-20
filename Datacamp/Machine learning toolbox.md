@@ -231,3 +231,129 @@ max(model[["results"]][["ROC"]])
 ```
 
 # Chapter 4: Preprocessing your data
+Real world data has missing values. A solution is to use the median to predict what the value would be.
+Caret allows a simple solution to this problem by passing `medianImpute` to the `preProcess` argument for train. This tells caret to inpute the missing values in X with their medians. Fortunately, the train() function in caret contains an argument called preProcess, which allows you to specify that median imputation should be used to fill in the missing values. 
+
+In previous chapters, you created models with the train() function using formulas such as y ~ .. An alternative way is to specify the x and y arguments to train(), where x is an object with samples in rows and features in columns and y is a numeric or factor vector containing the outcomes. Said differently, x is a matrix or data frame that contains the whole dataset you'd use for the data argument to the lm() call, for example, but excludes the response variable column; y is a vector that contains just the response variable column.
+
+Example
+```r
+# Apply median imputation: model
+model <- train(
+  x = breast_cancer_x, y = breast_cancer_y,
+  method = "glm",
+  trControl = myControl,
+  preProcess = "medianImpute"
+)
+
+# Print model to console
+model
+```
+
+Notice that in this case features are separated from the target variable.
+
+There are some problems with median imputation. It is very fast, but it can produce incorrect results if the input data has a systematic bias and is missing not-at-random. In other words, if there is a pattern in the data that leads to missing values, median imputation can miss this. It is therefore useful to explore other strategies for missing imputation, particularcly for linear models. **Ones useful ype of missing value imputation is k-nearest neighbors or KNN imputation.** This is a strategy for imputing missing values based on other, similar non-missing rows. Fortunately, the train function has a built-in method to do this by just passing the following argument `preProcess = "knnImpute"`
+
+An alternative to median imputation is k-nearest neighbors, or KNN, imputation. This is a more advanced form of imputation where missing values are replaced with values from other rows that are similar to the current row. While this is a lot more complicated to implement in practice than simple median imputation, it is very easy to explore in caret using the preProcess argument to train(). You can simply use preProcess = "knnImpute" to change the method of imputation used prior to model fitting.
+
+The preprocess argument to train can do a lot more than missing value imputation. It exposes a very wide range of pre-processing steps that can have a large impact on the results of your models. You can also chain together multiple preprocessing steps. A "common" recipe for linear model is to do median imputation -> center data -> scale -> fit glm. we can had Principal components analysis (PCA).
+
+**Preprocessing cheat sheet**
+- start with median imputation or try knn imputation
+- For linear models like lm. glm and glmnet always center and scale
+- For lienar models try PCA and spatial sign transformation
+- Tree-based models don't need much preprocessing
+
+One set of preprocessing functions that is particularly useful for fitting regression models is standardization: centering and scaling. You first center by subtracting the mean of each column from each value in that column, then you scale by dividing by the standard deviation.
+
+No (or low) variance variables may impact the results of our model. In general we remove this columns prior to model. With caret, we can had the `zv` to the preprocessing argument to remove constant-valued columns or `nzv` to remove nearly constant columns.
+
+Fortunately, caret contains a utility function called nearZeroVar() for removing such variables to save time during modeling.
+
+nearZeroVar() takes in data x, then looks at the ratio of the most common value to the second most common value, freqCut, and the percentage of distinct values out of the number of total samples, uniqueCut. By default, caret uses freqCut = 19 and uniqueCut = 10, which is fairly conservative. I like to be a little more aggressive and use freqCut = 2 and uniqueCut = 20 when calling nearZeroVar().
+
+```r
+# Identify near zero variance predictors: remove_cols
+remove_cols <- nearZeroVar(bloodbrain_x, names = TRUE, 
+                           freqCut = 2, uniqueCut = 20)
+
+# Get all column names from bloodbrain_x: all_cols
+all_cols <- names(bloodbrain_x)
+
+# Remove from data: bloodbrain_x_small
+bloodbrain_x_small <- bloodbrain_x[ , setdiff(all_cols, remove_cols)]
+```
+
+In this code we use `setdiff` to generate the columns that are on dataframe all_cols but are not included on remove_cols. The above code can give us information regarding which columns were removed  but we can do the same using the `nzv` on pre process argument in the train function.
+
+PCA is incredibly useful because it combines the low-variance and correlated variables in your dataset into a single set of high-variance, perpendicular predictors. It prevents colinearity. We can combine this with the "zv" argument.
+
+An alternative to removing low-variance predictors is to run PCA on your dataset. This is sometimes preferable because it does not throw out all of your data: many different low variance predictors may end up combined into one high variance PCA variable, which might have a positive impact on your model's accuracy.
+
+# Chapter 5: Selecting models: a case study in churn prediction
+In order to make a good comparison between models we need to define the training and test folds and make sure each model uses exactly the same split for each fold. We can do this by pre-defining a trainControl object, which explicitly specifies which rows are used for model building and which are used as holdouts. WE make train test indexes for cross-validation using caret's `createFolds` function. Note that these folds preserve the class distribution: the first fold has about a 14% churn rate. 
+
+Example code:
+```r
+set.seed(42)
+myFolds <- createFolds(churnTrain$churn, k = 5)
+
+myControl <- trainControl (
+  summaryFunction = twoClassSummary,
+  classProbs = TRUE
+  verbosIter = TRUE,
+  savePredictions = TRUE,
+  index = myFolds
+)
+```
+We can use myFolds as created above to fit multiple models.
+
+```r
+# Fit glmnet model: model_glmnet
+model_glmnet <- train(
+  x = churn_x, y = churn_y,
+  metric = "ROC",
+  method = "glmnet",
+  trControl = myControl
+)
+
+# Fit random forest: model_rf
+model_rf <- train(
+  x = churn_x, y = churn_y,
+  metric = "ROC",
+  method = "ranger",
+  trControl = myControl
+)
+```
+T
+he function `resamples()` provides a variety of methods for assessing which of two models is the best for a given dataset. 
+
+Example code:
+
+```r
+model_list <- list(
+  glmnet = model_glmnet,
+  rf = model_rf
+)
+
+# Collect resamples from the CV folds
+resamp <- resamples(model_list)
+summary(resamps)
+```
+You can compare models in caret using the resamples() function, provided they have the same training data and use the same trainControl object with preset cross-validation folds. resamples() takes as input a list of models and can be used to compare dozens of models at once (though in this case you are only comparing two models). We can than plot the results by using somthing like:
+
+```r
+dotplot(lots_of_models, metric = "ROC")
+```
+In general, you want the model with the higher median AUC, as well as a smaller range between min and max AUC.
+
+Another useful plot for comparing models is the scatterplot, also known as the xy-plot. This plot shows you how similar the two models' performances are on different folds.
+
+It's particularly useful for identifying if one model is consistently better than the other across all folds, or if there are situations when the inferior model produces better predictions on a particular subset of the data.
+
+```r
+# Create xyplot
+xyplot(resamples, metric = "ROC")
+```
+
+`caretEnsemble` provides the caretList() function for creating multiple caret models at once on the same dataset, using the same resampling folds. You can also create your own lists of caret models.
