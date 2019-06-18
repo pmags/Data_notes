@@ -168,3 +168,162 @@ As you've seen, the WHERE clause can be used to filter text data. However, so fa
 In SQL, the LIKE operator can be used in a WHERE clause to search for a pattern in a column. To accomplish this, you use something called a wildcard as a placeholder for some other values. There are two wildcards you can use with LIKE:
 
 The % wildcard will match zero, one, or many characters in text. The _ wildcard will match a single character. 
+
+# Aggregate functions
+Often, you will want to perform some calculation on the data in a database. SQL provides a few functions, called aggregate functions
+
+```sql
+SELECT AVG(budget)
+FROM films;
+```
+Returns the average value from the budget column of the films table. `MAX()` returns the maximum level and `SUM()` returns the sum of all values.
+
+Aggregate functions can be combined with the WHERE clause to gain further insights from your data.
+
+For example, to get the total budget of movies made in the year 2010 or later:
+
+```sql
+SELECT SUM(budget)
+FROM films
+WHERE release_year >= 2010;
+```
+
+In addition to using aggregate functions, you can perform basic arithmetic with symbols like +, -, *, and /.
+
+So, for example, this gives a result of 12:
+
+```sql
+SELECT (4 * 3);
+
+```
+However, the following gives a result of 1:
+
+```sql
+SELECT (4 / 3);
+
+```
+What's going on here?
+
+SQL assumes that if you divide an integer by an integer, you want to get an integer back. So be careful when dividing!
+
+If you want more precision when dividing, you can add decimal places to your numbers. For example,
+
+```sql
+SELECT (4.0 / 3.0) AS result;
+
+```
+gives you the result you would expect: 1.333.
+
+SQL allows you to do something called aliasing. Aliasing simply means you assign a temporary name to something. To alias, you use the AS keyword, which you've already seen earlier in this course.
+
+For example, in the above example we could use aliases to make the result clearer:
+
+```sql
+SELECT MAX(budget) AS max_budget,
+       MAX(duration) AS max_duration
+FROM films;
+```
+
+```sql
+SELECT title,
+        gross - budget AS net_profit
+FROM films;
+```
+example for porpotion:
+```sql
+-- get the count(deathdate) and multiply by 100.0
+-- then divide by count(*)
+SELECT  COUNT(deathdate) *100.0 / COUNT(*) AS percentage_dead
+FROM people;
+```
+# Sorting, grouping and joins
+In SQL, the ORDER BY keyword is used to sort results in ascending or descending order according to the values of one or more columns.
+
+By default ORDER BY will sort in ascending order. If you want to sort the results in descending order, you can use the DESC keyword. For example:
+
+```sql
+SELECT title
+FROM films
+ORDER BY release_year DESC;
+```
+The following example gives us all movies except for the year 2015
+
+```sql
+SELECT *
+FROM films
+WHERE release_year NOT IN (2015)
+ORDER BY duration;
+```
+
+To order results in descending order, you can put the keyword DESC after your ORDER BY. For example, to get all the names in the people table, in reverse alphabetical order:
+
+```sql
+SELECT name
+FROM people
+ORDER BY name DESC;
+```
+
+ORDER BY can also be used to sort on multiple columns. It will sort by the first column specified, then sort by the next, then the next, and so on. For example,
+
+```sql
+SELECT birthdate, name
+FROM people
+ORDER BY birthdate, name;
+```
+
+ Often you'll need to aggregate results. For example, you might want to count the number of male and female employees in your company. Here, what you want is to group all the males together and count them, and group all the females together and count them. In SQL, GROUP BY allows you to group a result by one or more columns, like so:
+
+```sql
+SELECT sex, count(*)
+FROM employees
+GROUP BY sex;
+```
+A word of warning: SQL will return an error if you try to SELECT a field that is not in your GROUP BY clause without using it to calculate some kind of value about the entire group.
+
+```sql
+SELECT release_year, AVG(duration)
+FROM films
+GROUP BY release_year;
+```
+
+In SQL, aggregate functions can't be used in WHERE clauses. 
+
+For example,
+
+```sql
+SELECT release_year
+FROM films
+GROUP BY release_year
+HAVING COUNT(title) > 10;
+```
+shows only those years in which more than 10 films were released.
+
+Example of a more complete query:
+
+```sql
+SELECT release_year, AVG(budget) 
+    AS avg_budget, AVG(gross) 
+    AS avg_gross
+FROM films
+WHERE release_year > 1990
+GROUP BY release_year
+HAVING AVG(budget) > 60000000
+ORDER BY avg_gross DESC
+```
+
+```sql
+-- select country, average budget, average gross
+SELECT country, 
+    AVG(budget) AS avg_budget,
+    AVG(gross) AS avg_gross
+-- from the films table
+FROM films
+-- group by country 
+GROUP BY country
+-- where the country has more than 10 titles
+HAVING COUNT(country)>10
+-- order by country
+ORDER BY country
+-- limit to only show 5 results
+LIMIT 5
+```
