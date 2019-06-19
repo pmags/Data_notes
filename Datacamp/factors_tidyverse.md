@@ -128,3 +128,85 @@ multiple_choice_responses %>%
   count(ml_method, sort = TRUE)
 ```
 # Creating factor variables
+
+```r
+work_challenges <- multipleChoiceResponses %>%
+  select(contains("WorkChallengeFrequency")) %>%
+  gather(work_challenge, frequency) %>%
+  mutate(work_challenge = str_remove(work_challenge, 
+  "WorkChallengeFrequency"))
+```
+`str_remove()` will remove a part of string.
+
+add_count adds a column to the dataset, n, keeping the same number of rows as the original dataset. Just like count, n defaults to be the number of rows for each group, but you can change that with the wt (weight) argument. You set wt equal to another column to make n now equal to the sum of that column for each group.
+
+```R
+perc_useful_platform <- learning_platform_usefulness %>%
+  # change dataset to one row per learning_platform usefulness pair with number of entries for each
+  count(learning_platform, usefulness) %>%
+  # use add_count to create column with total number of answers for that learning_platform
+  add_count(learning_platform, wt = n) %>%
+  # create a new column, perc, that is the percentage of people giving that response for that learning_platform
+  mutate(perc = n / nn)
+
+# create a line graph for each question with usefulness on x-axis and percentage of responses on y
+ggplot(perc_useful_platform, aes(x = usefulness, y = perc, group = learning_platform)) + 
+  geom_line() + 
+  facet_wrap(~ learning_platform)
+```
+
+`labs()` changes the labels of axis on ggplot. 
+
+The following example uses the theme function from ggplot to change the labels from horizontal to vertical.
+
+```r
+ggplot(job_titles_by_perc,
+        aes(x = CurrentJobTitleSelect, y = perc_w_title)) + 
+    geom_point() + 
+    theme(axis.text.x = element_text(angle = 90, hjust = 1))
+```
+
+In order to change an axis to percentage we can use the function `scale_y_continuous()` after labs.
+
+```r
+scale_y_continuous(labels = scales::percent_format())
+```
+
+Example of using `case_when` to create factor variables
+
+```r
+multiple_choice_responses %>%
+    # Filter for rows where Age is between 10 and 90
+    filter(between(Age,10,90)) %>%
+    # Create the generation variable based on age
+    mutate(generation = case_when(
+    between(Age, 10, 22) ~ "Gen Z", 
+    between(Age, 23, 37) ~ "Gen Y", 
+    between(Age, 38, 52) ~ "Gen X", 
+    between(Age, 53, 71) ~ "Baby Boomer", 
+    between(Age, 72, 90) ~ "Silent"
+    )) %>%
+    # Get a count of how many answers in each generation
+    count(generation)
+```
+# Case Study on Flight Etiquette
+
+REGEX expressions:
+`.` - matches any character
+`*` - zero or more times
+
+example:
+
+```r
+gathered_data %>%
+    # Remove everything before and including "rude to "
+    mutate(response_var = str_remove(response_var, ".*rude to ")) %>%
+    # Remove "on a plane"
+    mutate(response_var = str_remove(response_var, "on a plane"))
+```
+
+```r
+initial_plot + 
+  geom_text(aes(label = round(mean_mpg)))
+```
+adds value to every column in this case the mean.
