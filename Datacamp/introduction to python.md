@@ -56,3 +56,33 @@ To fix the error, you'll need to explicitly convert the types of your variables.
 
 Similar functions such as int(), float() and bool() will help you convert Python values into any type.
 
+# Python lists
+As opposed to int, bool etc., a list is a compound data type; you can group values together.
+
+A list can contain any Python type. Although it's not really common, a list can also contain a mix of Python types including strings, floats, booleans, etc.
+
+Subsetting Python lists is a piece of cake. Take the code sample below, which creates a list x and then selects "b" from it. Remember that this is the second element, so it has index 1. You can also use negative indexing.
+
+```py
+x = ["a", "b", "c", "d"]
+x[1]
+x[-3] # same result!
+```
+
+electing single values from a list is just one part of the story. It's also possible to slice your list, which means selecting multiple elements from your list. Use the following syntax:
+
+```
+my_list[start:end]
+
+```
+The start index will be included, while the end index is not.
+
+You saw before that a Python list can contain practically anything; even other lists! To subset lists of lists, you can use the same technique as before: square brackets. 
+
+```py
+x = [["a", "b", "c"],
+     ["d", "e", "f"],
+     ["g", "h", "i"]]
+x[2][0]
+x[2][:2]
+```
