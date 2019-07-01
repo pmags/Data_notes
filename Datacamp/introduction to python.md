@@ -86,3 +86,70 @@ x = [["a", "b", "c"],
 x[2][0]
 x[2][:2]
 ```
+If you can change elements in a list, you sure want to be able to add elements to it, right? You can use the + operator:
+
+```py
+x = ["a", "b", "c", "d"]
+y = x + ["e", "f"]
+```
+Finally, you can also remove elements from your list. You can do this with the del statement:
+
+```py
+x = ["a", "b", "c", "d"]
+del(x[1])
+```
+**Please notice that after we remove an element from a list them the lists index will change.**
+
+The ; sign is used to place commands on the same line. The following two code chunks are equivalent:
+
+```py
+# Same line
+command1; command2
+
+# Separate lines
+command1
+command2
+```
+# Functions and Packages
+
+A function is a peace of reproducible code.
+
+The general recipe for calling functions and saving the result to a variable is thus:
+
+```py
+output = function_name(input)
+```
+Methods are functions that belong to objects.
+
+Strings are not the only Python types that have methods associated with them. Lists, floats, integers and booleans are also types that come packaged with a bunch of useful methods. In this exercise, you'll be experimenting with:
+
+- index(), to get the index of the first element of a list that matches its input and
+
+- count(), to get the number of times an element appears in a list.
+
+Most list methods will change the list they're called on. Examples are:
+
+- append(), that adds an element to the list it is called on,
+- remove(), that removes the first element of a list that matches the input, and
+- reverse(), that reverses the order of the elements in the list it is called on.
+
+In order to use python packages we first have to install them. One of the options is to use pip. In order do do that we have to:
+
+```py
+Download get-pip.py
+# Terminal
+python3 get-pip.py
+
+# to install a package
+pip3 install numpy
+
+# We can either import th entire package or just a specific module
+
+import numpy as np
+from numpy import array
+```
+General imports, like import math, make all functionality from the math package available to you. However, if you decide to only use a specific part of a package, you can always make your import more selective:
+
+from math import pi
+
+
