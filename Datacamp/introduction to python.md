@@ -152,4 +152,68 @@ General imports, like import math, make all functionality from the math package 
 
 from math import pi
 
+# NumPy
 
+Python doesn´t know how to make calcultions list wide.
+
+Alternative to Python List: NumPy array. It allows to make calculations over entire arrays.
+
+NumPy arrays contains only one type of data.
+
+```py
+# Create list baseball
+baseball = [180, 215, 210, 210, 188, 176, 209, 200]
+
+# Import the numpy package as np
+import numpy as np
+
+# Create a numpy array from baseball: np_baseball
+np_baseball = np.array(baseball)
+
+# Print out type of np_baseball
+print(type(np_baseball))
+```
+
+To subset both regular Python lists and numpy arrays, you can use square brackets:
+
+```py
+x = [4 , 9 , 6, 3, 1]
+x[1]
+import numpy as np
+y = np.array(x)
+y[1]
+```
+For numpy specifically, you can also use boolean numpy arrays:
+
+```py
+high = y > 5
+y[high]
+```
+
+If your 2D numpy array has a regular structure, i.e. each row and column has a fixed number of values, complicated ways of subsetting become very easy. Have a look at the code below where the elements "a" and "c" are extracted from a list of lists.
+
+```py
+# regular list of lists
+x = [["a", "b"], ["c", "d"]]
+[x[0][0], x[1][0]]
+
+# numpy
+import numpy as np
+np_x = np.array(x)
+np_x[:,0]
+```
+
+numpy example to crete a random database:
+
+```py
+height = np.round(np.random.normal(1.75, 0.20, 5000),2)
+weight = no.round(np.random.normal(60.32, 15, 5000),2)
+np_city = no.column_stack((height, weight))
+```
+
+```py
+import numpy as np
+x = [1, 4, 8, 10, 12]
+np.mean(x)
+np.median(x)
+```
