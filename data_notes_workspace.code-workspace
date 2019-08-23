@@ -9,10 +9,10 @@
 		"sqltools.connections": [
 			{
 				"connectionTimeout": 30,
-				"database": "postgres",
+				"database": "nors",
 				"dialect": "PostgreSQL",
-				"name": "local",
-				"password": "p@rceir0s",
+				"name": "nors",
+				"password": "admin",
 				"port": 5432,
 				"server": "127.0.0.1",
 				"username": "psm"
