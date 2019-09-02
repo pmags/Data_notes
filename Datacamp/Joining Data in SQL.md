@@ -235,3 +235,169 @@ ORDER BY life_exp
 -- Limit to 5 records
 LIMIT 5
 ```
+# Set theory clauses
+
+In this chapter we will focus on UNION and UNION ALL.
+
+- UNION includes every record in both tables but not double,
+- UNION ALL includes avery record in both tables and does replicate thos that are in both tables.
+- INTERSECT results in only those records found in both the 2 tables.
+- EXCEPT results in only those records in one table but not the other
+  
+UNION and UNION ALL do not lookup like join. They simply stack up records on top of each other from one table to the next.
+
+```sql
+-- Select fields from 2010 table
+SELECT *
+  -- From 2010 table
+  FROM economies2010
+	-- Set theory clause
+	UNION ALL
+-- Select fields from 2015 table
+SELECT *
+  -- From 2015 table
+  FROM  economies2015
+-- Order by code and year
+ORDER BY code, year;
+```
+
+SEMI JOIN & ANTI-JOIN use the right table to determine which records to keep in the left table.
+
+An example of a semi join (in this case it uses query that returns all the countries which were independent before 1800 as a filter for the column)
+
+```sql
+SELECT president, country, continent
+FROM presidents
+WHERE country IN
+  (
+    SELECT name
+    FROM states
+    WHERE indep_year < 1800
+  );
+```
+The semi-join chooses records in the first table where a condition is met in a second table. An anti-join chooses records in the first table where a condition is not met in the second table.
+
+```sql
+-- Select distinct fields
+SELECT DISTINCT (name)
+  -- From languages
+  FROM languages
+-- Where in statement
+WHERE code IN
+  -- Subquery
+  (SELECT code
+   FROM countries
+   WHERE region = 'Middle East')
+-- Order by name
+ORDER BY name;
+```
+
+# Subqueries
+
+The most common type of subquery is one inside of a WHERE statement.
+
+```sql
+-- Select fields
+SELECT *
+  -- From populations
+  FROM populations
+-- Where life_expectancy is greater than
+WHERE life_expectancy > 1.15 *(
+  -- 1.15 * subquery
+  SELECT AVG(life_expectancy)
+   FROM populations
+   WHERE year = 2015)
+  AND year = 2015;
+```
+
+Get the urban population of only urban areas
+
+```sql
+-- 2. Select fields
+SELECT name, country_code, urbanarea_pop
+  -- 3. From cities
+  FROM cities
+-- 4. Where city name in the field of capital cities
+WHERE name IN
+  -- 1. Subquery
+  (SELECT capital
+   FROM countries)
+ORDER BY urbanarea_pop DESC;
+```
+The following queries are identical but follow a different approaches
+
+```sql
+/*SELECT countries.name AS country, COUNT(*) AS cities_num
+  FROM cities
+    INNER JOIN countries
+    ON countries.code = cities.country_code
+GROUP BY country
+ORDER BY cities_num DESC, country
+LIMIT 9;*/
+
+
+SELECT countries.name AS country,
+  (SELECT COUNT(*)
+   FROM cities
+   WHERE countries.code = cities.country_code) AS cities_num
+FROM countries
+ORDER BY cities_num DESC, country
+LIMIT 9;
+```
+
+Example of using subqueries inside FROM
+
+```sql
+-- Select fields
+SELECT local_name, subquery.lang_num
+  -- From countries
+  FROM countries,
+  	-- Subquery (alias as subquery)
+  	(-- Select fields (with aliases)
+SELECT code, COUNT(code) AS lang_num
+  -- From languages
+  FROM languages
+-- Group by code
+GROUP BY code) AS subquery
+  -- Where codes match
+  WHERE countries.code = subquery.code
+-- Order by descending number of languages
+ORDER BY lang_num DESC;
+```
+
+```sql
+-- Select fields
+SELECT economies.code, inflation_rate, unemployment_rate
+  -- From economies
+  FROM economies
+  -- Where year is 2015 and code is not in
+  WHERE year = 2015 AND economies.code NOT IN
+  	-- Subquery
+  	(SELECT code
+  	 FROM countries
+  	 WHERE (gov_form = 'Constitutional Monarchy'OR gov_form LIKE '%Republic%'))
+-- Order by inflation rate
+ORDER BY inflation_rate;
+```
+
+```sql
+-- Select fields
+SELECT name, country_code, city_proper_pop, metroarea_pop,  
+      -- Calculate city_perc
+      city_proper_pop/ metroarea_pop * 100 AS city_perc
+  -- From appropriate table
+  FROM cities
+  -- Where 
+  WHERE name IN
+    -- Subquery
+    (SELECT capital
+     FROM countries
+     WHERE (continent = 'Europe'
+        OR continent LIKE '%America'))
+       AND metroarea_pop IS NOT NULL
+-- Order appropriately
+ORDER BY city_perc DESC
+-- Limit amount
+LIMIT 10;
+
+```
