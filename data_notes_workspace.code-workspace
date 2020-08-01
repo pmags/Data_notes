@@ -39,7 +39,8 @@
 			"terminal.ansiRed":"#DD0907",
 			"terminal.ansiWhite":"#C0C0C0",
 			"terminal.ansiYellow":"#ffffff"
-		}
+		},
+		"python.pythonPath": "C:\\Anaconda3\\python.exe"
 	}
 	
 }
