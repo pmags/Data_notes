@@ -17,7 +17,7 @@
 				"username": "psm"
 			}
 		],
-		"workbench.panel.defaultLocation": "right",
+
 		"workbench.colorCustomizations": {
 			"terminal.background":"#000000",
 			"terminal.foreground":"#C0C0C0",
@@ -40,7 +40,9 @@
 			"terminal.ansiWhite":"#C0C0C0",
 			"terminal.ansiYellow":"#ffffff"
 		},
-		"python.pythonPath": "C:\\Anaconda3\\python.exe"
+		"python.pythonPath": "C:\\Anaconda3\\python.exe",
+		"editor.wordWrap": "on",
+		"terminal.integrated.automationShell.linux": ""
 	}
 	
 }
